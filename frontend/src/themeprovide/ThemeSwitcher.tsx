@@ -18,7 +18,6 @@ import {
   THEME_STORAGE_KEY,
   type ThemePreference,
 } from "./theme";
-import "./theme-switcher.css";
 
 const themeOptions: { label: string; value: ThemePreference }[] = [
   { label: "Light", value: "light" },
@@ -67,7 +66,7 @@ function subscribe(onChange: () => void) {
 }
 
 function getServerSnapshot(): null {
-  // The server cannot read localStorage. CSS chooses the initial icon instead.
+  // The server cannot read localStorage.
   return null;
 }
 
@@ -92,6 +91,7 @@ export const ThemeSwitcher = () => {
   );
   const currentOption = themeOptions[optionIndex] || themeOptions[2];
   const nextOption = themeOptions[(optionIndex + 1) % themeOptions.length];
+  const initialPreference = preference ?? readStoredThemePreference();
   const label =
     preference === null
       ? "Change color theme"
@@ -117,21 +117,7 @@ export const ThemeSwitcher = () => {
         initial={false}
         whileHover={shouldReduceMotion ? undefined : { scale: 1.05 }}
         whileTap={shouldReduceMotion ? undefined : { scale: 0.92 }}
-        style={{
-          display: "inline-flex",
-          width: "40px",
-          height: "40px",
-          flexShrink: 0,
-          alignItems: "center",
-          justifyContent: "center",
-          borderRadius: "50%",
-          border: "1px solid rgba(128, 128, 128, 0.2)",
-          backgroundColor: "transparent",
-          cursor: "pointer",
-          color: "inherit",
-          padding: 0,
-          outline: "none",
-        }}
+        className="inline-flex w-10 h-10 shrink-0 items-center justify-center rounded-full border border-border bg-transparent cursor-pointer text-inherit p-0 outline-none focus-visible:outline-none"
       >
         <svg
           aria-hidden="true"
@@ -144,22 +130,21 @@ export const ThemeSwitcher = () => {
           strokeWidth="1.75"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className={preference === null ? "theme-switcher-initial-icon" : undefined}
         >
           {preference === null ? (
-            // The head script sets data-theme before paint, so the saved icon
-            // is visible while React loads. Motion mounts in that same shape.
-            <>
-              <g data-theme-icon="light">
+            initialPreference === "light" ? (
+              <g>
                 <path d={sunRaysPath} />
                 <path d={iconPaths.light} />
               </g>
-              <path data-theme-icon="dark" d={iconPaths.dark} />
-              <g data-theme-icon="system">
+            ) : initialPreference === "dark" ? (
+              <path d={iconPaths.dark} />
+            ) : (
+              <g>
                 <path d={iconPaths.system} />
                 <path d={systemStandPath} />
               </g>
-            </>
+            )
           ) : (
             <>
               <m.g
@@ -170,7 +155,7 @@ export const ThemeSwitcher = () => {
                   rotate: preference === "light" ? 0 : 45,
                 }}
                 transition={transition}
-                style={{ transformOrigin: "12px 12px" }}
+                className="origin-[12px_12px]"
               >
                 <path d={sunRaysPath} />
               </m.g>
@@ -199,4 +184,3 @@ export const ThemeSwitcher = () => {
 };
 
 export default ThemeSwitcher;
-

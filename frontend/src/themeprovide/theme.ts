@@ -33,6 +33,9 @@ export function applyThemePreference(preference: ThemePreference): void {
 
   root.dataset.theme = preference;
   root.dataset.colorScheme = isDark ? "dark" : "light";
+  root.classList.toggle("scheme-dark", isDark);
+  root.classList.toggle("scheme-light", !isDark);
+  root.classList.remove("scheme-light-dark");
 }
 
 /** Applies and saves a selection, then notifies theme controls on this page. */
@@ -47,4 +50,3 @@ export function setThemePreference(preference: ThemePreference): void {
 
   window.dispatchEvent(new Event(THEME_CHANGE_EVENT));
 }
-
