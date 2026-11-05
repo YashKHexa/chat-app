@@ -1,7 +1,7 @@
-import { io } from 'socket.io-client'
+import { io, Socket } from 'socket.io-client'
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL ?? 'http://localhost:5000'
+export function connectsocket(): Socket {
+  return io('http://localhost:6969')
+}
 
-export const socket = io(SOCKET_URL, {
-  autoConnect: false,
-})
+export const connectSocket = connectsocket
