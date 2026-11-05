@@ -5,9 +5,9 @@ import App from "./App.tsx";
 import { AntdConfigProvider } from "./providers/AntdConfigProvider.tsx";
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
+ // <StrictMode>
     <AntdConfigProvider>
       <App />
     </AntdConfigProvider>
-  </StrictMode>,
+ // </StrictMode>,
 );
