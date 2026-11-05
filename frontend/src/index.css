@@ -41,7 +41,7 @@
 
 /* Theme Variables */
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
 
   /* Primary */
   --theme-color-primary: #0f7d34;
@@ -77,6 +77,14 @@
   --theme-radius: 16px;
   --theme-tablet-breakpoint: 768px;
   --theme-desktop-breakpoint: 1280px;
+}
+
+:root[data-color-scheme="light"] {
+  color-scheme: light;
+}
+
+:root[data-color-scheme="dark"] {
+  color-scheme: dark;
 }
 
 /* Theme Mapping */

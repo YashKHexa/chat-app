@@ -1,5 +1,7 @@
 import React from 'react'
-import { useChat } from '@/context/ChatContext'
+import { Typography } from 'antd'
+
+const { Text } = Typography
 
 interface NameAndTitleProps {
   name?: string
@@ -10,29 +12,22 @@ interface NameAndTitleProps {
 }
 
 const NameAndTitle: React.FC<NameAndTitleProps> = ({
-  name,
+  name = 'User',
   title,
   time,
   showStatus = false,
   className = '',
 }) => {
-  const { currentUserName } = useChat()
-
-  const displayName =
-    name && name !== 'currentUser'
-      ? name
-      : currentUserName || localStorage.getItem('chat_username') || 'User'
-
   if (showStatus) {
     return (
       <div className={`min-w-0 ${className}`}>
-        <div className="text-[15px] font-semibold text-font leading-tight">
-          {displayName}
-        </div>
+        <Text strong className="block text-[15px] !text-font leading-tight">
+          {name}
+        </Text>
         {title && (
-          <div className="text-xs text-font-secondary mt-[3px]">
+          <Text type="secondary" className="block text-xs !text-font-secondary mt-[3px]">
             {title}
-          </div>
+          </Text>
         )}
       </div>
     )
@@ -41,20 +36,20 @@ const NameAndTitle: React.FC<NameAndTitleProps> = ({
   return (
     <div className={`flex-1 min-w-0 ${className}`}>
       <div className="flex justify-between items-baseline mb-1">
-        <span className="text-[15px] font-semibold text-font truncate">
-          {displayName}
-        </span>
+        <Text strong ellipsis className="text-[15px] !text-font">
+          {name}
+        </Text>
         {time && (
-          <span className="text-xs text-font-tertiary ml-2 shrink-0">
+          <Text type="secondary" className="text-xs !text-font-tertiary ml-2 shrink-0">
             {time}
-          </span>
+          </Text>
         )}
       </div>
 
       {title && (
-        <span className="text-[13px] text-font-secondary truncate block pr-1.5">
+        <Text type="secondary" ellipsis className="text-[13px] !text-font-secondary block pr-1.5">
           {title}
-        </span>
+        </Text>
       )}
     </div>
   )

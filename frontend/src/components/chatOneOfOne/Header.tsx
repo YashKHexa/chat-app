@@ -10,7 +10,7 @@ const Header: React.FC = () => {
   return (
     <div className="flex items-center justify-between px-6 py-4 border-b border-border box-border min-h-[74px]">
       <div className="flex items-center gap-3">
-        {activeConversation ? (
+        {activeConversation && (
           <>
             <Avatar
               text={activeConversation.avatarText}
@@ -23,10 +23,6 @@ const Header: React.FC = () => {
               showStatus
             />
           </>
-        ) : (
-          <span className="text-font-secondary text-[15px] font-medium">
-            Chat
-          </span>
         )}
       </div>
 

@@ -1,38 +1,29 @@
 import React from 'react'
-import { useChat } from '@/context/ChatContext'
+import { Avatar as AntdAvatar, type AvatarProps as AntdAvatarProps } from 'antd'
 
-interface AvatarProps {
+interface AvatarProps extends AntdAvatarProps {
   text?: string
-  size?: number | 'large' | 'small' | 'default'
   bg?: string
   color?: string
-  gap?: number
-  className?: string
 }
 
 const Avatar: React.FC<AvatarProps> = ({
   text,
+  children,
   size = 46,
   className = '',
+  bg: _bg,
+  color: _color,
+  ...props
 }) => {
-  const { currentUserName } = useChat()
-
-  const displayText =
-    text ||
-    (currentUserName
-      ? currentUserName.slice(0, 2).toUpperCase()
-      : localStorage.getItem('chat_username')?.slice(0, 2).toUpperCase() || 'U')
-
-  const isLarge = typeof size === 'number' ? size >= 44 : size === 'large'
-
   return (
-    <div
-      className={`rounded-full flex items-center justify-center font-semibold shrink-0 select-none bg-avatar-bg text-avatar-text ${
-        isLarge ? 'w-[46px] h-[46px] text-[15px]' : 'w-[42px] h-[42px] text-[13px]'
-      } ${className}`}
+    <AntdAvatar
+      size={size}
+      className={`font-semibold shrink-0 bg-avatar-bg text-avatar-text ${className}`}
+      {...props}
     >
-      {displayText}
-    </div>
+      {text || children || 'U'}
+    </AntdAvatar>
   )
 }
 
