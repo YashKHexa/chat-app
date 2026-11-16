@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Modal, Input, Button } from 'antd'
+import { Input, Button } from 'antd'
 import type { Socket } from 'socket.io-client'
 import { connectsocket } from '@/services/socket'
 
@@ -16,15 +16,11 @@ export const Popup: React.FC<PopupProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(true)
   const [name, setName] = useState(() => localStorage.getItem('chat_username') || '')
-
   const socket = useRef<Socket | null>(null)
 
   useEffect(() => {
     socket.current = connectsocket()
-
-    return () => {
-      socket.current?.disconnect()
-    }
+    return () => { socket.current?.disconnect() }
   }, [])
 
   useEffect(() => {
@@ -33,9 +29,7 @@ export const Popup: React.FC<PopupProps> = ({
       setIsOpen(true)
     }
     window.addEventListener('open-name-popup', handleOpenPopup)
-    return () => {
-      window.removeEventListener('open-name-popup', handleOpenPopup)
-    }
+    return () => window.removeEventListener('open-name-popup', handleOpenPopup)
   }, [])
 
   const isModalOpen = propOpen !== undefined ? propOpen : isOpen
@@ -51,35 +45,41 @@ export const Popup: React.FC<PopupProps> = ({
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleContinue()
-    }
+    if (e.key === 'Enter') handleContinue()
   }
 
+  if (!isModalOpen) return null
+
   return (
-    <Modal
-      open={isModalOpen}
-      onCancel={() => {
-        setIsOpen(false)
-        onCancel?.()
-      }}
-      footer={null}
-      closable={hasExistingName}
-      maskClosable={hasExistingName}
-      keyboard={hasExistingName}
-      centered
-      width={460}
-      className="[&_.ant-modal-content]:!rounded-[20px] [&_.ant-modal-content]:!p-6 [&_.ant-modal-content]:!bg-modal-bg [&_.ant-modal-content]:!border [&_.ant-modal-content]:!border-border"
+    // Full screen overlay — blur background
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', background: 'rgba(0,0,0,0.4)' }}
+      onClick={hasExistingName ? () => { setIsOpen(false); onCancel?.() } : undefined}
     >
-      <div>
+      {/* Modal box — uses CSS variables so theme works perfectly */}
+      <div
+        className="relative w-[460px] rounded-[20px] p-6 border border-border bg-background shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close button */}
+        {hasExistingName && (
+          <button
+            onClick={() => { setIsOpen(false); onCancel?.() }}
+            className="absolute top-4 right-4 w-7 h-7 flex items-center justify-center rounded-full text-font-secondary hover:bg-background-secondary transition-colors text-lg leading-none"
+          >
+            ×
+          </button>
+        )}
+
         {/* Title */}
         <h2 className="m-0 mb-2 text-xl font-bold text-font tracking-[-0.2px]">
           Enter your name
         </h2>
 
-        {/* Subtitle / Description */}
+        {/* Subtitle */}
         <p className="m-0 mb-5 text-[13.5px] text-font-secondary leading-relaxed">
-          Enter your name to start chatting. This will be used to identify
+          Enter your name to start chatting. This will be used to identify you.
         </p>
 
         {/* Input */}
@@ -90,11 +90,11 @@ export const Popup: React.FC<PopupProps> = ({
             onChange={(e) => setName(e.target.value)}
             onKeyDown={handleKeyDown}
             autoFocus
-            className="!h-[46px] !rounded-xl !text-[14.5px] !border-modal-input-border !bg-modal-input !text-font placeholder:!text-font-tertiary focus:!border-modal-input-border"
+            className="!h-[46px] !rounded-xl !text-[14.5px] !border-modal-input-border !bg-background-secondary !text-font placeholder:!text-font-tertiary focus:!border-modal-input-border !shadow-none"
           />
         </div>
 
-        {/* Footer / Continue button */}
+        {/* Continue button */}
         <div className="flex justify-end">
           <Button
             type="primary"
@@ -105,7 +105,7 @@ export const Popup: React.FC<PopupProps> = ({
           </Button>
         </div>
       </div>
-    </Modal>
+    </div>
   )
 }
 
