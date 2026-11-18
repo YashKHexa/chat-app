@@ -1,135 +1,121 @@
-import React, { createContext, useContext, useState, useEffect } from 'react'
-import type { Conversation, Message } from '../types/types'
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react'
+import { connectsocket } from '@/services/socket'
+import type { Socket } from 'socket.io-client'
+
+export interface MessageItem {
+  id: string | number
+  sender: string
+  text: string
+  time: string
+  isOutgoing: boolean
+}
 
 export interface ChatContextType {
   currentUserName: string
   setCurrentUserName: (name: string) => void
-  conversations: Conversation[]
-  setConversations: React.Dispatch<React.SetStateAction<Conversation[]>>
+  messages: MessageItem[]
+  sendMessage: (text: string) => void
+  activeConversation: any
+  filteredConversations: any[]
   activeId: string
   setActiveId: (id: string) => void
-  activeConversation?: Conversation
-  messages: Message[]
-  sendMessage: (text: string) => void
-  searchTerm: string
-  setSearchTerm: (term: string) => void
-  filteredConversations: Conversation[]
 }
 
-const defaultContextValue: ChatContextType = {
+const defaultRoom = {
+  id: '1',
+  name: 'Group Chat',
+  avatarText: 'GC',
+  avatarBg: 'var(--theme-color-primary)',
+  avatarColor: 'var(--theme-color-on-brand)',
+  lastMessage: 'Live Room',
+  time: '',
+}
+
+const ChatContext = createContext<ChatContextType>({
   currentUserName: '',
   setCurrentUserName: () => {},
-  conversations: [],
-  setConversations: () => {},
-  activeId: '',
-  setActiveId: () => {},
-  activeConversation: undefined,
   messages: [],
   sendMessage: () => {},
-  searchTerm: '',
-  setSearchTerm: () => {},
-  filteredConversations: [],
-}
+  activeConversation: defaultRoom,
+  filteredConversations: [defaultRoom],
+  activeId: '1',
+  setActiveId: () => {},
+})
 
-const ChatContext = createContext<ChatContextType>(defaultContextValue)
-
-export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
-  const [currentUserName, setCurrentUserNameState] = useState<string>(() => {
-    return localStorage.getItem('chat_username') || ''
-  })
-  const [conversations, setConversations] = useState<Conversation[]>([])
-  const [activeId, setActiveId] = useState<string>('')
-  const [messagesMap, setMessagesMap] = useState<Record<string, Message[]>>({})
-  const [searchTerm, setSearchTerm] = useState<string>('')
+export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [currentUserName, setCurrentUserNameState] = useState<string>(
+    () => localStorage.getItem('chat_username') || ''
+  )
+  const [messages, setMessages] = useState<MessageItem[]>([])
+  const socketRef = useRef<Socket | null>(null)
 
   const setCurrentUserName = (name: string) => {
     setCurrentUserNameState(name)
     localStorage.setItem('chat_username', name)
   }
 
+  // 1. Socket connect aur listen karna
   useEffect(() => {
-    const handleUserChange = () => {
-      const stored = localStorage.getItem('chat_username')
-      if (stored && stored !== currentUserName) {
-        setCurrentUserName(stored)
-      }
-    }
+    if (!currentUserName) return
 
-    handleUserChange()
-    window.addEventListener('chat-user-change', handleUserChange)
-    window.addEventListener('storage', handleUserChange)
+    const socket = connectsocket()
+    socketRef.current = socket
+
+    socket.on('connect', () => {
+      console.log('✅ Connected:', socket.id)
+      socket.emit('joinRoom', currentUserName)
+    })
+
+    // Jab kisi ka message aaye
+    socket.on('chatMessage', (msg: { id: string | number; sender: string; text: string; time: string }) => {
+      setMessages((prev) => [
+        ...prev,
+        {
+          ...msg,
+          isOutgoing: msg.sender === currentUserName,
+        },
+      ])
+    })
+
+    // Jab koi naya user join kare
+    socket.on('roomNotice', (newUser: string) => {
+      console.log(`${newUser} joined to group!`)
+    })
+
     return () => {
-      window.removeEventListener('chat-user-change', handleUserChange)
-      window.removeEventListener('storage', handleUserChange)
+      socket.disconnect()
     }
   }, [currentUserName])
 
-  const activeConversation =
-    conversations.find((c) => c.id === activeId) || undefined
-  const messages = activeId ? messagesMap[activeId] || [] : []
-
-  const handleSelectConversation = (id: string) => {
-    setActiveId(id)
-    setConversations((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, unreadCount: 0 } : c))
-    )
-  }
-
+  // 2. Message bhejna
   const sendMessage = (text: string) => {
-    if (!activeId) return
-    const time = new Date().toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit',
-    })
-    const newMessage: Message = {
-      id: `msg-${Date.now()}`,
-      senderId: 'currentUser',
-      text,
-      timestamp: time,
-      isOutgoing: true,
+    if (!text.trim()) return
+
+    const now = new Date()
+    const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+
+    const msg = {
+      id: Date.now(),
+      sender: currentUserName,
+      text: text.trim(),
+      time: time,
     }
 
-    setMessagesMap((prev) => ({
-      ...prev,
-      [activeId]: [...(prev[activeId] || []), newMessage],
-    }))
-
-    setConversations((prev) =>
-      prev.map((c) =>
-        c.id === activeId
-          ? {
-              ...c,
-              lastMessage: text,
-              time: 'Just now',
-            }
-          : c
-      )
-    )
+    // Socket ko bhejo
+    socketRef.current?.emit('chatMessage', msg)
   }
-
-  const filteredConversations = conversations.filter(
-    (c) =>
-      c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.lastMessage.toLowerCase().includes(searchTerm.toLowerCase())
-  )
 
   return (
     <ChatContext.Provider
       value={{
         currentUserName,
         setCurrentUserName,
-        conversations,
-        setConversations,
-        activeId,
-        setActiveId: handleSelectConversation,
-        activeConversation,
         messages,
         sendMessage,
-        searchTerm,
-        setSearchTerm,
-        filteredConversations,
+        activeConversation: defaultRoom,
+        filteredConversations: [defaultRoom],
+        activeId: '1',
+        setActiveId: () => {},
       }}
     >
       {children}
@@ -137,6 +123,4 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
   )
 }
 
-export const useChat = (): ChatContextType => {
-  return useContext(ChatContext) || defaultContextValue
-}
+export const useChat = () => useContext(ChatContext)

@@ -1,44 +1,12 @@
 import Main from "@/components/Main";
 import { Popup } from "@/popup/Popup";
-import { useEffect, useRef, useState } from "react";
-import type { Socket } from "socket.io-client";
-import { connectsocket } from "@/services/socket";
+import { useState } from "react";
 import { ThemeSwitcher } from "@/themeprovide/ThemeSwitcher";
+import { useChat } from "@/context/ChatContext";
 
 const Home = () => {
-  const socket = useRef<Socket | null>(null);
-
-  // hamesha popup pehle dikhao
+  const { setCurrentUserName } = useChat();
   const [popupDone, setPopupDone] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (!popupDone) return;
-
-    const name = localStorage.getItem('chat_username') || '';
-    socket.current = connectsocket();
-
-    socket.current.on('connect', () => {
-      console.log('✅ Socket connected:', socket.current?.id);
-      console.log('🚀 Joining room as:', name);
-      socket.current?.emit('joinRoom', name);
-    });
-
-    socket.current.on('roomNotice', (newUser: string) => {
-      console.log(`📢 Notice: ${newUser} joined the group!`);
-    });
-
-    socket.current.on('disconnect', () => {
-      console.log('❌ Socket disconnected');
-    });
-
-    socket.current.on('connect_error', (err) => {
-      console.log('⚠️ Connection error:', err.message);
-    });
-
-    return () => {
-      socket.current?.disconnect();
-    };
-  }, [popupDone]);
 
   if (!popupDone) {
     return (
@@ -49,7 +17,10 @@ const Home = () => {
         </div>
         <Popup
           open={true}
-          onContinue={() => setPopupDone(true)}
+          onContinue={(name) => {
+            setCurrentUserName(name);
+            setPopupDone(true);
+          }}
         />
       </div>
     );
