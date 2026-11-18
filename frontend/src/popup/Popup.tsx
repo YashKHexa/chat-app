@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Input, Button } from 'antd'
+import { useChat } from '@/context/ChatContext'
 
 interface PopupProps {
   open?: boolean
@@ -12,12 +13,13 @@ export const Popup: React.FC<PopupProps> = ({
   onContinue,
   onCancel,
 }) => {
+  const { setCurrentUserName } = useChat()
   const [isOpen, setIsOpen] = useState(true)
-  const [name, setName] = useState('')  // refresh pe blank
+  const [name, setName] = useState('') // refresh pe blank
 
   useEffect(() => {
     const handleOpenPopup = () => {
-      setName('')  // open-name-popup event pe bhi blank
+      setName('')
       setIsOpen(true)
     }
     window.addEventListener('open-name-popup', handleOpenPopup)
@@ -31,6 +33,7 @@ export const Popup: React.FC<PopupProps> = ({
     if (!name.trim()) return
     const trimmed = name.trim()
     localStorage.setItem('chat_username', trimmed)
+    setCurrentUserName(trimmed)
     window.dispatchEvent(new Event('chat-user-change'))
     setIsOpen(false)
     onContinue?.(trimmed)
