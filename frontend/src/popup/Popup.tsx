@@ -15,7 +15,7 @@ export const Popup: React.FC<PopupProps> = ({
   onCancel,
 }) => {
   const [isOpen, setIsOpen] = useState(true)
-  const [name, setName] = useState(() => localStorage.getItem('chat_username') || '')
+  const [name, setName] = useState('')  // refresh pe blank
   const socket = useRef<Socket | null>(null)
 
   useEffect(() => {
@@ -25,7 +25,7 @@ export const Popup: React.FC<PopupProps> = ({
 
   useEffect(() => {
     const handleOpenPopup = () => {
-      setName(localStorage.getItem('chat_username') || '')
+      setName('')  // open-name-popup event pe bhi blank
       setIsOpen(true)
     }
     window.addEventListener('open-name-popup', handleOpenPopup)
@@ -51,13 +51,11 @@ export const Popup: React.FC<PopupProps> = ({
   if (!isModalOpen) return null
 
   return (
-    // Full screen overlay — blur background
     <div
       className="fixed inset-0 z-50 flex items-center justify-center"
       style={{ backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', background: 'rgba(0,0,0,0.4)' }}
       onClick={hasExistingName ? () => { setIsOpen(false); onCancel?.() } : undefined}
     >
-      {/* Modal box — uses CSS variables so theme works perfectly */}
       <div
         className="relative w-[460px] rounded-[20px] p-6 border border-border bg-background shadow-2xl"
         onClick={(e) => e.stopPropagation()}
@@ -72,17 +70,14 @@ export const Popup: React.FC<PopupProps> = ({
           </button>
         )}
 
-        {/* Title */}
         <h2 className="m-0 mb-2 text-xl font-bold text-font tracking-[-0.2px]">
           Enter your name
         </h2>
 
-        {/* Subtitle */}
         <p className="m-0 mb-5 text-[13.5px] text-font-secondary leading-relaxed">
           Enter your name to start chatting. This will be used to identify you.
         </p>
 
-        {/* Input */}
         <div className="mb-5">
           <Input
             placeholder="Your name (e.g. John Doe)"
@@ -94,7 +89,6 @@ export const Popup: React.FC<PopupProps> = ({
           />
         </div>
 
-        {/* Continue button */}
         <div className="flex justify-end">
           <Button
             type="primary"
