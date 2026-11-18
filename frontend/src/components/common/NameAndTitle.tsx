@@ -6,7 +6,6 @@ const { Text } = Typography
 interface NameAndTitleProps {
   name?: string
   title?: string
-  time?: string
   showStatus?: boolean
   className?: string
 }
@@ -14,7 +13,6 @@ interface NameAndTitleProps {
 const NameAndTitle: React.FC<NameAndTitleProps> = ({
   name = 'User',
   title,
-  time,
   showStatus = false,
   className = '',
 }) => {
@@ -35,15 +33,10 @@ const NameAndTitle: React.FC<NameAndTitleProps> = ({
 
   return (
     <div className={`flex-1 min-w-0 ${className}`}>
-      <div className="flex justify-between items-baseline mb-1">
+      <div className="mb-1">
         <Text strong ellipsis className="text-[15px] !text-font">
           {name}
         </Text>
-        {time && (
-          <Text type="secondary" className="text-xs !text-font-tertiary ml-2 shrink-0">
-            {time}
-          </Text>
-        )}
       </div>
 
       {title && (

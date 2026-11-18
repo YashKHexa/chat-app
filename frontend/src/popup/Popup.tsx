@@ -1,69 +1,25 @@
-import React, { useState, useEffect } from 'react'
+import React, { type FormEvent } from 'react'
 import { Input, Button } from 'antd'
-import { useChat } from '@/context/ChatContext'
+import { useChatStore } from '@/store/chatStore'
 
-interface PopupProps {
-  open?: boolean
-  onContinue?: (name: string) => void
-  onCancel?: () => void
-}
+const Popup: React.FC = () => {
+  const userName = useChatStore((s) => s.userName)
+  const join = useChatStore((s) => s.join)
 
-export const Popup: React.FC<PopupProps> = ({
-  open: propOpen,
-  onContinue,
-  onCancel,
-}) => {
-  const { setCurrentUserName } = useChat()
-  const [isOpen, setIsOpen] = useState(true)
-  const [name, setName] = useState('') // refresh pe blank
+  if (userName) return null
 
-  useEffect(() => {
-    const handleOpenPopup = () => {
-      setName('')
-      setIsOpen(true)
-    }
-    window.addEventListener('open-name-popup', handleOpenPopup)
-    return () => window.removeEventListener('open-name-popup', handleOpenPopup)
-  }, [])
-
-  const isModalOpen = propOpen !== undefined ? propOpen : isOpen
-  const hasExistingName = Boolean(localStorage.getItem('chat_username'))
-
-  const handleContinue = () => {
-    if (!name.trim()) return
-    const trimmed = name.trim()
-    localStorage.setItem('chat_username', trimmed)
-    setCurrentUserName(trimmed)
-    window.dispatchEvent(new Event('chat-user-change'))
-    setIsOpen(false)
-    onContinue?.(trimmed)
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const name = String(new FormData(e.currentTarget).get('name')).trim()
+    if (name) join(name)
   }
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') handleContinue()
-  }
-
-  if (!isModalOpen) return null
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40"
-      onClick={hasExistingName ? () => { setIsOpen(false); onCancel?.() } : undefined}
-    >
-      <div
+    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
+      <form
+        onSubmit={handleSubmit}
         className="relative w-[460px] rounded-[20px] p-6 border border-border bg-background shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
       >
-        {/* Close button */}
-        {hasExistingName && (
-          <button
-            onClick={() => { setIsOpen(false); onCancel?.() }}
-            className="absolute top-4 right-4 w-7 h-7 flex items-center justify-center rounded-full text-font-secondary hover:bg-background-secondary transition-colors text-lg leading-none"
-          >
-            ×
-          </button>
-        )}
-
         <h2 className="m-0 mb-2 text-xl font-bold text-font tracking-[-0.2px]">
           Enter your name
         </h2>
@@ -74,10 +30,9 @@ export const Popup: React.FC<PopupProps> = ({
 
         <div className="mb-5">
           <Input
+            name="name"
+            maxLength={50}
             placeholder="Your name (e.g. John Doe)"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            onKeyDown={handleKeyDown}
             autoFocus
             className="!h-[46px] !rounded-xl !text-[14.5px] !border-modal-input-border !bg-background-secondary !text-font placeholder:!text-font-tertiary focus:!border-modal-input-border !shadow-none"
           />
@@ -86,13 +41,13 @@ export const Popup: React.FC<PopupProps> = ({
         <div className="flex justify-end">
           <Button
             type="primary"
-            onClick={handleContinue}
+            htmlType="submit"
             className="!bg-primary hover:!bg-primary-hover !border-transparent !rounded-full !h-10 !px-7 !text-sm !font-semibold !text-on-brand shadow-sm"
           >
             Continue
           </Button>
         </div>
-      </div>
+      </form>
     </div>
   )
 }

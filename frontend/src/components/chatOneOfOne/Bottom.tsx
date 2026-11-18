@@ -1,49 +1,41 @@
-import React, { useState } from 'react'
-import { Input, Button } from 'antd'
+import React, { type FormEvent } from 'react'
+import { Button } from 'antd'
 import { SendOutlined } from '@ant-design/icons'
-import { useChat } from '@/context/ChatContext'
+import { useChatStore } from '@/store/chatStore'
 
 const Bottom: React.FC = () => {
-  const { sendMessage, activeConversation } = useChat()
-  const [inputText, setInputText] = useState('')
+  const sendMessage = useChatStore((s) => s.sendMessage)
 
-  const handleSend = () => {
-    if (!inputText.trim() || !activeConversation) return
-    sendMessage(inputText.trim())
-    setInputText('')
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleSend()
-    }
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const form = e.currentTarget
+    const text = String(new FormData(form).get('text')).trim()
+    if (!text) return
+    sendMessage(text)
+    form.reset()
   }
 
   return (
     <div className="px-6 pt-4 pb-5 border-t border-border">
-      <div className="flex items-center bg-background-secondary rounded-full py-1 pl-4 pr-1.5 border border-border">
-        <Input
-          variant="borderless"
-          placeholder={activeConversation ? 'Write a message' : 'Select a conversation to start messaging'}
-          value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
-          onKeyDown={handleKeyDown}
-          disabled={!activeConversation}
-          className="chat-message-input flex-1 text-sm text-font placeholder:!text-font-tertiary [&_input]:!text-font [&_input]:placeholder:!text-font-tertiary"
+      <form
+        onSubmit={handleSubmit}
+        className="flex items-center bg-background-secondary rounded-full py-1 pl-4 pr-1.5 border border-border"
+      >
+        <input
+          name="text"
+          maxLength={2000}
+          autoComplete="off"
+          placeholder="Write a message"
+          className="flex-1 bg-transparent outline-none text-sm text-font placeholder:text-font-tertiary"
         />
         <Button
           type="primary"
           shape="circle"
+          htmlType="submit"
           icon={<SendOutlined className="text-sm" />}
-          onClick={handleSend}
-          disabled={!inputText.trim() || !activeConversation}
-          className={`!w-9 !h-9 flex items-center justify-center !border-transparent transition-colors ${
-            inputText.trim() && activeConversation
-              ? '!bg-primary hover:!bg-primary-hover !text-on-brand'
-              : '!bg-btn-disabled !text-on-brand'
-          }`}
+          className="!w-9 !h-9 flex items-center justify-center !border-transparent !bg-primary hover:!bg-primary-hover !text-on-brand"
         />
-      </div>
+      </form>
     </div>
   )
 }
