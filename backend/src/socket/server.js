@@ -5,7 +5,7 @@ import { randomUUID } from "node:crypto";
 import { Server } from "socket.io";
 
 const PORT = Number(process.env.PORT) || 8000;
-const ROOM = "group-chat";
+const ONLINE_ROOM = "online";
 const MAX_NAME_LENGTH = 50;
 const MAX_TEXT_LENGTH = 2000;
 
@@ -39,17 +39,17 @@ io.on("connection", (socket) => {
 
     const user = { id: socket.id, name };
     users.set(socket.id, user);
-    await socket.join(ROOM);
+    await socket.join(ONLINE_ROOM);
 
     socket.emit(
       "onlineUsers",
       [...users.values()].filter((u) => u.id !== socket.id),
     );
-    socket.to(ROOM).emit("userJoined", user);
+    socket.to(ONLINE_ROOM).emit("userJoined", user);
     log("info", "user joined", { userId: user.id, name, online: users.size });
   });
 
-  socket.on("chatMessage", (text) => {
+  socket.on("chatMessage", (payload) => {
     const user = users.get(socket.id);
     if (!user) {
       return log("warn", "chatMessage rejected: not joined", {
@@ -57,8 +57,16 @@ io.on("connection", (socket) => {
       });
     }
 
-    const cleanText = clean(text, MAX_TEXT_LENGTH);
-    if (!cleanText) {
+    const receiverId = payload?.to;
+    if (receiverId === user.id || !users.has(receiverId)) {
+      return log("warn", "chatMessage rejected: invalid receiver", {
+        userId: user.id,
+        receiverId,
+      });
+    }
+
+    const text = clean(payload.text, MAX_TEXT_LENGTH);
+    if (!text) {
       return log("warn", "chatMessage rejected: invalid text", {
         userId: user.id,
       });
@@ -67,19 +75,23 @@ io.on("connection", (socket) => {
     const message = {
       id: randomUUID(),
       senderId: user.id,
-      senderName: user.name,
-      text: cleanText,
+      receiverId,
+      text,
       createdAt: new Date().toISOString(),
     };
 
-    io.to(ROOM).emit("chatMessage", message);
-    log("info", "message sent", { messageId: message.id, userId: user.id });
+    io.to([receiverId, user.id]).emit("chatMessage", message);
+    log("info", "message sent", {
+      messageId: message.id,
+      senderId: user.id,
+      receiverId,
+    });
   });
 
   socket.on("disconnect", (reason) => {
     const user = users.get(socket.id);
     users.delete(socket.id);
-    if (user) io.to(ROOM).emit("userLeft", user.id);
+    if (user) io.to(ONLINE_ROOM).emit("userLeft", user.id);
     log("info", "socket disconnected", {
       socketId: socket.id,
       userId: user?.id,
