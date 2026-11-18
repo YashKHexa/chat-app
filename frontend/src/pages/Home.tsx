@@ -16,7 +16,24 @@ const Home = () => {
 
     const name = localStorage.getItem('chat_username') || '';
     socket.current = connectsocket();
-    socket.current.emit('joinroom', name);
+
+    socket.current.on('connect', () => {
+      console.log('✅ Socket connected:', socket.current?.id);
+      console.log('🚀 Joining room as:', name);
+      socket.current?.emit('joinRoom', name);
+    });
+
+    socket.current.on('roomNotice', (newUser: string) => {
+      console.log(`📢 Notice: ${newUser} joined the group!`);
+    });
+
+    socket.current.on('disconnect', () => {
+      console.log('❌ Socket disconnected');
+    });
+
+    socket.current.on('connect_error', (err) => {
+      console.log('⚠️ Connection error:', err.message);
+    });
 
     return () => {
       socket.current?.disconnect();

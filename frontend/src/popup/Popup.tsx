@@ -1,7 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Input, Button } from 'antd'
-import type { Socket } from 'socket.io-client'
-import { connectsocket } from '@/services/socket'
 
 interface PopupProps {
   open?: boolean
@@ -16,12 +14,6 @@ export const Popup: React.FC<PopupProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(true)
   const [name, setName] = useState('')  // refresh pe blank
-  const socket = useRef<Socket | null>(null)
-
-  useEffect(() => {
-    socket.current = connectsocket()
-    return () => { socket.current?.disconnect() }
-  }, [])
 
   useEffect(() => {
     const handleOpenPopup = () => {

@@ -13,25 +13,39 @@ const io = new Server(server, {
 });
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-
-app.get('/', (req, res) => {
-  res.send('<h1>saumya from ahm</h1>');
-});
-
-
 const ROOM = "Got User"
-io.on('connection', (socket) => {
-  console.log('A user connected in our Chat-App', socket.id);
 
-  socket.on('joinroom', async (username) => {
-    console.log(`${username} is joining the chat.`)
-    await socket.join(ROOM)
+io.on('connection', (socket) => {
+  console.log('a user connected', socket.id);
+
+  socket.on('joinRoom', async (userName) => {
+    console.log(`${userName} is joining the group.`);
+
+    await socket.join(ROOM);
+
+    // send to all
+    // io.to(ROOM).emit('roomNotice', userName);
+
+    // broadcast (baaki sabhi users ko notify karega)
+    socket.to(ROOM).emit('roomNotice', userName);
+  });
+
+  socket.on('chatMessage', (msg) => {
+    // message ko poore room me broadcast karna
+    io.to(ROOM).emit('chatMessage', msg);
   });
 
   socket.on('disconnect', () => {
     console.log('User disconnected', socket.id);
   });
 });
+
+
+
+app.get('/', (req, res) => {
+  res.send('<h1>saumya from ahm</h1>');
+});
+
 
 server.listen(6969, () => {
   console.log('server running at http://localhost:6969');
