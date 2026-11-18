@@ -3,7 +3,7 @@ import { Empty } from 'antd'
 import { useChat, type MessageItem } from '@/context/ChatContext'
 
 const Body: React.FC = () => {
-  const { messages } = useChat()
+  const { messages, activeConversation } = useChat()
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {

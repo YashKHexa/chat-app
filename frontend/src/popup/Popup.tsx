@@ -44,8 +44,7 @@ export const Popup: React.FC<PopupProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', background: 'rgba(0,0,0,0.4)' }}
+      className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40"
       onClick={hasExistingName ? () => { setIsOpen(false); onCancel?.() } : undefined}
     >
       <div
