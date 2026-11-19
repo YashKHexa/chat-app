@@ -22,7 +22,7 @@ interface ChatState {
   selectedUserId?: string
   search: string
   join: (name: string) => void
-  selectUser: (id: string) => void
+  selectUser: (id?: string) => void
   sendMessage: (text: string) => void
   setSearch: (search: string) => void
 }

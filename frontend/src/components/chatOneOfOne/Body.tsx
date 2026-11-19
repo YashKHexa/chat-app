@@ -22,21 +22,21 @@ const Body: React.FC<{ userId: string }> = ({ userId }) => {
 
   if (messages.length === 0) {
     return (
-      <div className="flex-1 flex items-center justify-center p-6">
+      <div className="flex-1 flex items-center justify-center p-3 md:p-5 lg:p-6">
         <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No messages yet" />
       </div>
     )
   }
 
   return (
-    <div className="flex-1 overflow-y-auto px-7 py-6 flex flex-col gap-4.5">
+    <div className="flex-1 overflow-y-auto px-3 md:px-5 lg:px-7 py-3 md:py-5 lg:py-6 flex flex-col gap-3 md:gap-4 lg:gap-4.5">
       {messages.map((msg) => {
         const isOutgoing = msg.senderId === myId
 
         return (
           <div key={msg.id} className={`flex flex-col ${isOutgoing ? 'items-end' : 'items-start'}`}>
             <div
-              className={`max-w-[65%] px-4.5 py-3 rounded-2xl text-[14.5px] leading-relaxed break-words ${
+              className={`max-w-[85%] md:max-w-[75%] lg:max-w-[65%] px-3 md:px-4 lg:px-4.5 py-2 md:py-2.5 lg:py-3 rounded-2xl text-[13.5px] md:text-[14px] lg:text-[14.5px] leading-relaxed break-words ${
                 isOutgoing
                   ? 'bg-primary text-on-brand'
                   : 'bg-background-secondary text-font border border-border'

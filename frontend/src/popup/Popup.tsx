@@ -15,10 +15,10 @@ const Popup: React.FC = () => {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
+    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40 p-3 md:p-5 lg:p-6">
       <form
         onSubmit={handleSubmit}
-        className="relative w-[460px] rounded-[20px] p-6 border border-border bg-background shadow-2xl"
+        className="relative w-full max-w-[460px] rounded-[20px] p-4 md:p-5 lg:p-6 border border-border bg-background shadow-2xl"
       >
         <h2 className="m-0 mb-2 text-xl font-bold text-font tracking-[-0.2px]">
           Enter your name

@@ -16,7 +16,7 @@ const Bottom: React.FC = () => {
   }
 
   return (
-    <div className="px-6 pt-4 pb-5 border-t border-border">
+    <div className="px-3 md:px-5 lg:px-6 pt-2.5 md:pt-3.5 lg:pt-4 pb-3 md:pb-4 lg:pb-5 border-t border-border">
       <form
         onSubmit={handleSubmit}
         className="flex items-center bg-background-secondary rounded-full py-1 pl-4 pr-1.5 border border-border"
